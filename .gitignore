@@ -1,1 +1,2 @@
 *.env
+src/powermeterread/__pycache__/

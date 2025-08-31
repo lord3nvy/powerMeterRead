@@ -1,0 +1,17 @@
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[raw_PowerUsage](
+	[ESIID] [varchar](50) NULL,
+	[USAGE_DATE] [date] NULL,
+	[REVISION_DATE] [datetime] NULL,
+	[USAGE_START_TIME] [varchar](50) NULL,
+	[USAGE_END_TIME] [varchar](50) NULL,
+	[USAGE_KWH] [float] NULL,
+	[ESTIMATED_ACTUAL] [varchar](50) NULL,
+	[CONSUMPTION_SURPLUSGENERATION] [varchar](50) NULL
+) ON [PRIMARY]
+GO

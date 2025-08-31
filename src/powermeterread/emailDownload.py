@@ -2,40 +2,42 @@ import imaplib
 import email
 import os
 
-# Email credentials and settings
-EMAIL = 'etl.ing244819f@yahoo.com'
-PASSWORD = 'N,M2\\SIn.l5Ju"IqvCem'
-IMAP_SERVER = 'imap.mail.yahoo.com'  # Change if using Outlook, Yahoo, etc.
-SENDER = 'sender@example.com'
-#SAVE_DIR = 'C:/path/to/save/attachments'
+class EmailAttachmentDownloader:
+    def __init__(self, email_address, password, imap_server, sender, save_dir):
+        self.email_address = email_address
+        self.password = password
+        self.imap_server = imap_server
+        self.sender = sender
+        self.save_dir = save_dir
+        self.mail = None
 
-print(PASSWORD)
+    def connect(self):
+        self.mail = imaplib.IMAP4_SSL(self.imap_server)
+        self.mail.login(self.email_address, self.password)
+        self.mail.select('inbox')
 
-# Connect to the server
-mail = imaplib.IMAP4_SSL(IMAP_SERVER)
-mail.login(EMAIL, PASSWORD)
-mail.select('inbox')
+    def download_attachments(self):
+        status, data = self.mail.search(None, f'FROM "{self.sender}"')
+        for num in data[0].split():
+            status, msg_data = self.mail.fetch(num, '(RFC822)')
+            raw_email = msg_data[0][1]
+            msg = email.message_from_bytes(raw_email)
 
-# Search for emails from the specified sender
-status, data = mail.search(None, f'FROM "{SENDER}"')
+            for part in msg.walk():
+                if part.get_content_maintype() == 'multipart':
+                    continue
+                if part.get('Content-Disposition') is None:
+                    continue
 
-# Process each email
-# for num in data[0].split():
-#     status, msg_data = mail.fetch(num, '(RFC822)')
-#     raw_email = msg_data[0][1]
-#     msg = email.message_from_bytes(raw_email)
+                filename = part.get_filename()
+                if filename:
+                    filepath = os.path.join(self.save_dir, filename)
+                    with open(filepath, 'wb') as f:
+                        f.write(part.get_payload(decode=True))
+                    print(f'Saved: {filepath}')
 
-#     for part in msg.walk():
-#         if part.get_content_maintype() == 'multipart':
-#             continue
-#         if part.get('Content-Disposition') is None:
-#             continue
+    def logout(self):
+        if self.mail:
+            self.mail.logout()
 
-#         filename = part.get_filename()
-#         if filename:
-#             filepath = os.path.join(SAVE_DIR, filename)
-#             with open(filepath, 'wb') as f:
-#                 f.write(part.get_payload(decode=True))
-#             print(f'Saved: {filepath}')
 
-mail.logout()
